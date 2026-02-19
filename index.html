@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sorry Sathya</title>
+
+<style>
+body {
+    margin: 0;
+    background: #eaeaea;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+#startLink {
+    font-size: 26px;
+    color: blue;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+#scene {
+    display: none;
+    position: relative;
+    width: 800px;
+    height: 500px;
+    background: #ddd;
+    overflow: hidden;
+}
+
+#girl {
+    position: absolute;
+    left: 50px;
+    bottom: 0;
+    height: 400px;
+    opacity: 0;
+    transition: opacity 1.5s;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+</style>
+</head>
+
+<body>
+
+<div id="startLink" onclick="startScene()">Click here</div>
+
+<div id="scene">
+    <img id="girl" src="girl.png" alt="girl">
+    <canvas id="draw" width="800" height="500"></canvas>
+</div>
+
+<!-- 🎵 Background Music -->
+<audio id="bgMusic" src="music.mp3" preload="auto"></audio>
+
+<script>
+const canvas = document.getElementById("draw");
+const ctx = canvas.getContext("2d");
+const music = document.getElementById("bgMusic");
+
+let heartPoints = [];
+let heartIndex = 0;
+let textIndex = 0;
+
+// ❤️ TEXT
+const writeText = "Sorry Sathya";
+
+// ⏱️ PLAY TIME (2 min 10 sec = 130 seconds)
+const MUSIC_DURATION = 130 * 1000; // milliseconds
+
+function startScene() {
+    document.getElementById("startLink").style.display = "none";
+    document.getElementById("scene").style.display = "block";
+
+    // Girl appears
+    setTimeout(() => {
+        document.getElementById("girl").style.opacity = 1;
+    }, 500);
+
+    // Start heart after girl appears
+    setTimeout(drawHeart, 2000);
+}
+
+// Generate heart shape
+function generateHeart() {
+    heartPoints = [];
+    for (let t = 0; t <= Math.PI * 2; t += 0.05) {
+        let x = 16 * Math.pow(Math.sin(t), 3);
+        let y =
+            13 * Math.cos(t) -
+            5 * Math.cos(2 * t) -
+            2 * Math.cos(3 * t) -
+            Math.cos(4 * t);
+
+        heartPoints.push({
+            x: 500 + x * 6,
+            y: 200 - y * 6
+        });
+    }
+}
+
+function drawHeart() {
+    generateHeart();
+
+    // 🎵 START MUSIC
+    music.volume = 0.8;
+    music.currentTime = 0;
+    music.play();
+
+    // ⏱️ STOP MUSIC AFTER 2:10
+    setTimeout(() => {
+        music.pause();
+    }, MUSIC_DURATION);
+
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 3;
+
+    let interval = setInterval(() => {
+        if (heartIndex >= heartPoints.length - 1) {
+            clearInterval(interval);
+            setTimeout(writeTextSlowly, 600);
+            return;
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(heartPoints[heartIndex].x, heartPoints[heartIndex].y);
+        ctx.lineTo(
+            heartPoints[heartIndex + 1].x,
+            heartPoints[heartIndex + 1].y
+        );
+        ctx.stroke();
+
+        heartIndex++;
+    }, 30);
+}
+
+function writeTextSlowly() {
+    let interval = setInterval(() => {
+        ctx.font = "52px cursive";
+        ctx.fillStyle = "black";
+
+        ctx.clearRect(330, 300, 450, 90);
+        ctx.fillText(
+            writeText.substring(0, textIndex + 1),
+            350,
+            360
+        );
+
+        textIndex++;
+
+        if (textIndex === writeText.length) {
+            clearInterval(interval);
+            // music continues until 2:10
+        }
+    }, 300);
+}
+</script>
+
+</body>
+</html>
